@@ -124,24 +124,32 @@ class GameProcessor:
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
+def get_ice_servers():
+    servers = [{"urls": ["stun:stun.l.google.com:19302"]}]
+    try:
+        username = st.secrets["TURN_USERNAME"]
+        credential = st.secrets["TURN_CREDENTIAL"]
+        servers.append(
+            {
+                "urls": [
+                    "turn:standard.relay.metered.ca:80",
+                    "turn:standard.relay.metered.ca:443",
+                    "turns:standard.relay.metered.ca:443?transport=tcp",
+                ],
+                "username": username,
+                "credential": credential,
+            }
+        )
+    except (KeyError, FileNotFoundError):
+        st.warning("No TURN credentials set - video may fail on restrictive networks.")
+    return servers
+
+
 ctx = webrtc_streamer(
     key="blink-a-word",
     mode=WebRtcMode.SENDRECV,
     video_processor_factory=GameProcessor,
-    rtc_configuration={
-        "iceServers": [
-            {"urls": ["stun:stun.l.google.com:19302"]},
-            {
-                "urls": [
-                    "turn:openrelay.metered.ca:80",
-                    "turn:openrelay.metered.ca:443",
-                    "turn:openrelay.metered.ca:443?transport=tcp",
-                ],
-                "username": "openrelayproject",
-                "credential": "openrelayproject",
-            },
-        ]
-    },
+    rtc_configuration={"iceServers": get_ice_servers()},
     media_stream_constraints={"video": True, "audio": False},
 )
 
