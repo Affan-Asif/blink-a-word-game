@@ -128,7 +128,20 @@ ctx = webrtc_streamer(
     key="blink-a-word",
     mode=WebRtcMode.SENDRECV,
     video_processor_factory=GameProcessor,
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    rtc_configuration={
+        "iceServers": [
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {
+                "urls": [
+                    "turn:openrelay.metered.ca:80",
+                    "turn:openrelay.metered.ca:443",
+                    "turn:openrelay.metered.ca:443?transport=tcp",
+                ],
+                "username": "openrelayproject",
+                "credential": "openrelayproject",
+            },
+        ]
+    },
     media_stream_constraints={"video": True, "audio": False},
 )
 
